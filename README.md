@@ -71,6 +71,13 @@ globalStore.use(loggerStatio());
 - `effectStatio(key, effect)` - 특정 키 변경 시 효과 실행
 - `validateStatio(key, validator)` - 상태 유효성 검증
 
+### statio가 권장하는 네이밍
+
+- `user`, `auth`, `theme`, `settings` 등 변수의 명확한 도메인 지정
+- boolean → `is`, `has`, `can`
+- 배열 → `List`, `Items`
+- 객체 → `Data`, `Info`, `State`
+
 ## 라이센스
 
 MIT
