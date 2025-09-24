@@ -1,10 +1,8 @@
-// GlobalStore.ts
 import { produce } from "immer";
 
 export type Listener<T> = (state: T) => void;
 export type Middleware<T> = (prev: T | undefined, next: T, key: string) => void;
 
-// Custom HashMap implementation for better performance
 class FastHashMap<V> {
   private buckets: Array<Array<{ key: string; value: V }>> = [];
   private size = 0;
@@ -110,7 +108,6 @@ class FastHashMap<V> {
   }
 }
 
-// Custom Set implementation for listeners
 class FastSet<T> {
   private items: T[] = [];
 
@@ -167,14 +164,12 @@ export class GlobalStore {
   set<T>(key: string, value: T): void {
     const prev = this.store.get(key) as T | undefined;
 
-    // 값이 같으면 early return (얕은 비교)
     if (prev === value) {
       return;
     }
 
     this.store.set(key, value);
 
-    // 미들웨어가 있을 때만 실행
     if (this.middlewares.size > 0) {
       for (const middleware of this.middlewares) {
         middleware(prev, value, key);
@@ -184,7 +179,6 @@ export class GlobalStore {
     if (this.isBatching) {
       this.batchedKeys.add(key);
     } else {
-      // 리스너가 있을 때만 실행
       const keyListeners = this.listeners.get(key);
       if (keyListeners && keyListeners.size > 0) {
         for (const listener of keyListeners) {
@@ -211,10 +205,8 @@ export class GlobalStore {
     }
     keyListeners.add(listener as Listener<unknown>);
 
-    // 클로저에서 참조를 캐시하여 lookup 최소화
     return () => {
       keyListeners!.delete(listener as Listener<unknown>);
-      // 빈 Set 정리
       if (keyListeners!.size === 0) {
         this.listeners.delete(key);
       }
@@ -226,7 +218,6 @@ export class GlobalStore {
   }
 
   batch(fn: () => void): void {
-    // 이미 배치 중이면 중첩 배치 방지
     if (this.isBatching) {
       fn();
       return;
@@ -238,7 +229,6 @@ export class GlobalStore {
     } finally {
       this.isBatching = false;
 
-      // 배치된 키들에 대해서만 리스너 실행
       if (this.batchedKeys.size > 0) {
         for (const key of this.batchedKeys) {
           const state = this.store.get(key);
@@ -255,5 +245,4 @@ export class GlobalStore {
   }
 }
 
-//SingleInstance
 export const globalStore = new GlobalStore();
